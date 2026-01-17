@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Kavach | AI Scam Defense & Redressal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg: #020617;
+            --primary: #0ea5e9;
+            --secondary: #3b82f6;
+            --accent: #22d3ee;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --glass: rgba(15, 23, 42, 0.9);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+        body { 
+            background: var(--bg); 
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #f8fafc; 
+            overflow-x: hidden; 
+        }
+        html { scroll-behavior: smooth; }
+
+        /* ===== NAVIGATION ===== */
+        nav { 
+            position: fixed; top: 0; width: 100%; z-index: 2000;
+            background: var(--glass); backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.8rem 5%; display: flex; justify-content: space-between; align-items: center; 
+        }
+        .logo { font-family: 'Orbitron', sans-serif; color: var(--primary); font-size: 1.4rem; text-shadow: 0 0 10px var(--primary); }
+        .nav-links { list-style: none; display: flex; gap: 1.5rem; }
+        .nav-links a { text-decoration: none; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: .3s; font-size: 1rem; }
+        .nav-links a:hover { color: var(--accent); transform: translateY(-2px); }
+        .menu-toggle { display: none; font-size: 1.6rem; cursor: pointer; color: var(--primary); }
+
+        /* ===== CONTAINER ===== */
+        .container { 
+            padding-top: 100px; /* Offset for sticky nav */
+            max-width: 1200px; margin: auto; padding-left: 20px; padding-right: 20px; 
+        }
+
+        /* ===== HERO & SCANNER (FIRST SECTION) ===== */
+        .hero { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease; }
+        .hero h1 { font-family: 'Orbitron', sans-serif; font-size: clamp(2rem, 5vw, 3.5rem); color: #fff; }
+        
+        .analyzer-card { 
+            background: var(--glass); border: 2px solid var(--primary);
+            border-radius: 20px; padding: 30px; margin-bottom: 50px; 
+            box-shadow: 0 0 30px rgba(14, 165, 233, 0.2);
+            position: relative; overflow: hidden;
+        }
+        .analyzer-card::before {
+            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.1), transparent);
+            animation: sweep 3s infinite;
+        }
+
+        textarea { 
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+            border-radius: 12px; color: #fff; padding: 20px; font-size: 1.1rem; margin-bottom: 20px;
+            resize: vertical; min-height: 150px;
+        }
+        .btn { 
+            width: 100%; padding: 16px; border: none; border-radius: 50px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: #fff; font-weight: 700; font-size: 1.2rem; cursor: pointer; transition: .3s;
+        }
+        .btn:hover { box-shadow: 0 0 25px var(--primary); transform: scale(1.02); }
+
+        /* ===== HELPLINES ===== */
+        .help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 60px; }
+        .help-card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 25px; text-align: center; transition: .3s; }
+        .help-card:hover { border-color: var(--danger); transform: translateY(-5px); }
+        .help-card i { font-size: 2.5rem; color: var(--danger); margin-bottom: 15px; }
+        .help-card h3 { font-size: 2rem; margin-bottom: 5px; color: #fff; }
+
+        /* ===== COMPLAINT DASHBOARD ===== */
+        .complaint-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 60px; }
+        .dashboard-category { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 25px; }
+        .dashboard-category h3 { color: var(--accent); margin-bottom: 20px; font-family: 'Orbitron', sans-serif; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .link-item { 
+            display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.2); 
+            padding: 15px; border-radius: 12px; margin-bottom: 12px; 
+            text-decoration: none; color: #fff; transition: .3s; border: 1px solid transparent;
+        }
+        .link-item:hover { background: rgba(14, 165, 233, 0.1); border-color: var(--primary); transform: translateX(5px); }
+        .link-item i { color: var(--primary); font-size: 1.2rem; }
+
+        /* ===== STATS & VERDICT ===== */
+        .verdict-container { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; margin-bottom: 50px; }
+        .risk-box { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 30px; text-align: center; }
+        .gauge { width: 200px; height: 100px; margin: 0 auto 20px; background: #1e293b; border-radius: 100px 100px 0 0; position: relative; overflow: hidden; }
+        .gauge-color { width: 100%; height: 100%; background: conic-gradient(from 270deg, var(--success) 0deg 60deg, #eab308 60deg 120deg, var(--danger) 120deg 180deg); }
+        .gauge-center { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 75px; background: var(--bg); border-radius: 75px 75px 0 0; }
+        .needle { position: absolute; bottom: 0; left: 50%; width: 3px; height: 75px; background: #fff; transform-origin: bottom center; transform: rotate(-90deg); transition: 1.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+
+        /* ===== FOOTER & FEEDBACK ===== */
+        .feedback-form { max-width: 700px; margin: 0 auto 60px; background: var(--glass); padding: 40px; border-radius: 20px; border: 1px solid var(--border); }
+        footer { text-align: center; padding: 40px; border-top: 1px solid var(--border); background: var(--glass); color: #94a3b8; }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes sweep { 0% { left: -100%; } 100% { left: 200%; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width: 900px) {
+            .verdict-container { grid-template-columns: 1fr; }
+            .nav-links { 
+                position: absolute; top: 70px; right: 5%; background: var(--glass); 
+                flex-direction: column; padding: 25px; border-radius: 15px; 
+                display: none; border: 1px solid var(--border); width: 250px;
+            }
+            .nav-links.show { display: flex; }
+            .menu-toggle { display: block; }
+            .hero h1 { font-size: 2.2rem; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<nav>
+    <div class="logo">🛡️ CYBER KAVACH</div>
+    <div class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+    <ul class="nav-links" id="navLinks">
+        <li><a href="#home"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="#helplines"><i class="fas fa-phone"></i> Helplines</a></li>
+        <li><a href="#complaints"><i class="fas fa-gavel"></i> Govt Complaint</a></li>
+        <li><a href="#feedback"><i class="fas fa-comment"></i> Feedback</a></li>
+    </ul>
+</nav>
+
+<div class="container" id="home">
+    <div class="hero">
+        <h1>AI SCAM SHIELD</h1>
+        <p>Real-time detection for Phishing, Banking Fraud & Malicious Links</p>
+    </div>
+
+    <section id="analyzer" class="analyzer-card">
+        <h2 class="section-title" style="margin-bottom: 15px; color: var(--primary); text-align: center;">AI Threat Scanner</h2>
+        <textarea id="scamInput" placeholder="Paste the suspicious message, URL, or email content here for AI analysis..."></textarea>
+        <button class="btn" onclick="analyze()">RUN SECURITY AUDIT</button>
+        <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: #64748b;">
+            <i class="fas fa-lock"></i> Privacy Protected: Content is analyzed in real-time and not stored.
+        </div>
+    </section>
+
+    <div class="verdict-container">
+        <div class="risk-box">
+            <h3>AI Verdict</h3>
+            <div class="gauge">
+                <div class="gauge-color"></div>
+                <div class="gauge-center"></div>
+                <div class="needle" id="needle"></div>
+            </div>
+            <h2 id="status" style="color:var(--success)">System Ready</h2>
+            <p id="resultText" style="margin-top: 10px; color: #94a3b8;"></p>
+        </div>
+        <div class="risk-box" style="text-align: left; height: 350px;">
+            <h3>Live Threat Activity</h3>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <h2 class="section-title" id="helplines" style="text-align: center; margin-bottom: 30px;">🚨 Emergency Helplines</h2>
+    <div class="help-grid">
+        <div class="help-card"><i class="fas fa-phone-alt"></i><h3>1930</h3><p>National Cyber Crime Helpline</p></div>
+        <div class="help-card"><i class="fas fa-university"></i><h3>14440</h3><p>RBI Financial Fraud Support</p></div>
+        <div class="help-card"><i class="fas fa-shield-alt"></i><h3>112</h3><p>All-in-One Emergency India</p></div>
+    </div>
+
+    <h2 class="section-title" id="complaints" style="text-align: center; margin-bottom: 30px;">🏛️ Redressal Dashboard</h2>
+    <div class="complaint-dashboard">
+        <div class="dashboard-category">
+            <h3>Central Portals</h3>
+            <a href="https://cybercrime.gov.in" target="_blank" class="link-item"><i class="fas fa-globe"></i> National Cyber Crime Reporting</a>
+            <a href="https://sancharsaathi.gov.in/sfc/" target="_blank" class="link-item"><i class="fas fa-eye"></i> Chakshu (Report Fraud Calls/SMS)</a>
+            <a href="https://www.cert-in.org.in" target="_blank" class="link-item"><i class="fas fa-user-shield"></i> CERT-In (Technical Incidents)</a>
+        </div>
+        <div class="dashboard-category">
+            <h3>Financial & Banking</h3>
+            <a href="https://cms.rbi.org.in/" target="_blank" class="link-item"><i class="fas fa-university"></i> RBI Ombudsman (Bank Fraud)</a>
+            <a href="https://www.npci.org.in/what-we-do/upi/dispute-redressal-mechanism" target="_blank" class="link-item"><i class="fas fa-money-bill-wave"></i> UPI/NPCI Dispute Redressal</a>
+            <a href="https://www.sebi.gov.in/sebiweb/other/OtherAction.do?doRecognisedFpi=yes&intmId=35" target="_blank" class="link-item"><i class="fas fa-chart-line"></i> SEBI (Investment Scams)</a>
+        </div>
+        <div class="dashboard-category">
+            <h3>Telecom & Identity</h3>
+            <a href="https://tafcop.sancharsaathi.gov.in/" target="_blank" class="link-item"><i class="fas fa-sim-card"></i> TAFCOP (Check SIM Cards)</a>
+            <a href="https://www.ceir.gov.in" target="_blank" class="link-item"><i class="fas fa-mobile-alt"></i> CEIR (Block Stolen Mobile)</a>
+            <a href="https://uidai.gov.in/en/contact-support/file-a-complaint.html" target="_blank" class="link-item"><i class="fas fa-id-card"></i> Aadhaar Misuse Complaint</a>
+        </div>
+    </div>
+
+    <h2 class="section-title" id="feedback" style="text-align: center; margin-bottom: 30px;">Feedback</h2>
+    <div class="feedback-form">
+        <input type="text" placeholder="Full Name" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;">
+        <input type="email" placeholder="Email Address" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;">
+        <textarea placeholder="Share your suggestions or report issues with the tool..." style="width: 100%; min-height: 100px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;"></textarea>
+        <button class="btn" onclick="alert('Thank you for your valuable feedback!')">SUBMIT FEEDBACK</button>
+    </div>
+</div>
+
+<footer>
+    🛡️ Cyber Kavach | Major Project 2026<br>
+    Designed & Developed by <b>Yash Trivedi</b><br>
+    <small>Secure Bharat, Digital Bharat.</small>
+</footer>
+
+<script>
+    // Navigation toggle
+    function toggleMenu() {
+        document.getElementById('navLinks').classList.toggle('show');
+    }
+
+    /* Chart.js Configuration */
+    const ctx = document.getElementById('chart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['10AM', '11AM', '12PM', '1PM', '2PM', '3PM'],
+            datasets: [{
+                data: [45, 82, 35, 95, 50, 65],
+                borderColor: '#0ea5e9',
+                backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#22d3ee'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            }
+        }
+    });
+
+    /* --- SECURE AI ANALYSIS CALL --- */
+    async function analyze() {
+        const input = document.getElementById('scamInput').value;
+        const resultText = document.getElementById('resultText');
+        const needle = document.getElementById('needle');
+        const status = document.getElementById('status');
+
+        if (!input) {
+            alert("Please paste content to analyze.");
+            return;
+        }
+
+        try {
+            // UI Feedback
+            resultText.innerHTML = "🔍 Cyber Kavach is scanning via Gemini AI...";
+            
+            // Call the Vercel Backend (The backend has the secret keys)
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: input })
+            });
+
+            if (!response.ok) throw new Error("Backend connection failed.");
+            
+            const data = await response.json();
+
+            // Update UI with Real AI Results
+            const score = data.riskScore;
+            needle.style.transform = `rotate(${score * 1.8 - 90}deg)`;
+            
+            status.innerText = data.verdict;
+            const badgeColor = score > 70 ? "var(--danger)" : (score > 30 ? "#eab308" : "var(--success)");
+            status.style.color = badgeColor;
+            status.style.textShadow = `0 0 10px ${badgeColor}`;
+
+            resultText.innerHTML = `
+                <div style="font-size: 1.2rem; margin-bottom: 10px;">${data.explanation}</div>
+                <div style="color: #94a3b8;">Threat Confidence Score: <b>${score}/100</b></div>
+                ${score >= 70 ? '<br><a href="https://cybercrime.gov.in" target="_blank" style="color:white; text-decoration: underline;">Report this scam to Govt</a>' : ''}
+            `;
+
+        } catch (error) {
+            console.error("System Error:", error);
+            resultText.innerHTML = "<span style='color:red;'>⚠️ Analysis Offline. Ensure Vercel Environment Variables are set.</span>";
+        }
+    }
+</script>
+</body>
+</html>
