@@ -6,6 +6,7 @@ from supabase import create_client, Client
 
 try:
     import google.generativeai as genai
+    from google.generativeai.types import RequestOptions
     GENAI_AVAILABLE = True
 except Exception as import_error:
     print(f"IMPORT ERROR: {import_error}")
@@ -25,10 +26,11 @@ if SUPABASE_URL and SUPABASE_KEY:
     except Exception as e:
         print(f"Supabase Init Error: {e}")
 
+# Initialize Gemini
 if GEMINI_KEY and GENAI_AVAILABLE:
     try:
-        # Use v1 for stability to avoid the 404/v1beta error
-        genai.configure(api_key=GEMINI_KEY, transport='rest')
+        # We explicitly configure the API key
+        genai.configure(api_key=GEMINI_KEY)
     except Exception as e:
         print(f"Gemini Config Error: {e}")
 
@@ -63,12 +65,18 @@ class handler(BaseHTTPRequestHandler):
                 self._send_error(400, "No text provided")
                 return
 
-            # 1. Call Gemini AI (FIX: Explicit path models/gemini-1.5-flash)
-            model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
+            # 1. Call Gemini AI (FIX: Using the stable v1 path)
+            # We use 'gemini-1.5-flash' and specify the v1 api_version in the request options
+            model = genai.GenerativeModel('gemini-1.5-flash')
             
             prompt = f"Analyze this message for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
             
-            response = model.generate_content(prompt)
+            # RequestOptions forces the use of the stable v1 API version
+            response = model.generate_content(
+                prompt,
+                request_options=RequestOptions(api_version='v1')
+            )
+            
             result_text = response.text
             
             if '{' in result_text and '}' in result_text:
