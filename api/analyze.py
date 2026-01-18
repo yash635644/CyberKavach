@@ -29,7 +29,6 @@ if SUPABASE_URL and SUPABASE_KEY:
 # Initialize Gemini
 if GEMINI_KEY and GENAI_AVAILABLE:
     try:
-        # We explicitly configure the API key
         genai.configure(api_key=GEMINI_KEY)
     except Exception as e:
         print(f"Gemini Config Error: {e}")
@@ -49,8 +48,7 @@ class handler(BaseHTTPRequestHandler):
         status_data = {
             "status": "Cyber Kavach API Online",
             "gemini_ready": GEMINI_KEY is not None,
-            "supabase_ready": supabase is not None,
-            "usage": "Send a POST request with {'text': 'message'} to analyze."
+            "supabase_ready": supabase is not None
         }
         self._send_json(200, status_data)
     
@@ -65,20 +63,19 @@ class handler(BaseHTTPRequestHandler):
                 self._send_error(400, "No text provided")
                 return
 
-            # 1. Call Gemini AI (FIX: Using the stable v1 path)
-            # We use 'gemini-1.5-flash' and specify the v1 api_version in the request options
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # 1. CALL GEMINI (Updated to 2.0 Flash for stability)
+            # If your region doesn't support 2.0 yet, change back to 'gemini-1.5-flash'
+            model = genai.GenerativeModel('gemini-2.0-flash')
             
             prompt = f"Analyze this message for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
             
-            # RequestOptions forces the use of the stable v1 API version
+            # Explicitly use the 'v1' API version to avoid 404 models error
             response = model.generate_content(
                 prompt,
                 request_options=RequestOptions(api_version='v1')
             )
             
             result_text = response.text
-            
             if '{' in result_text and '}' in result_text:
                 result_text = result_text[result_text.find('{'):result_text.rfind('}') + 1]
             
@@ -89,17 +86,17 @@ class handler(BaseHTTPRequestHandler):
                 try:
                     supabase.table('scam_logs').insert({
                         "message_text": user_input,
-                        "risk_score": int(result_json.get("riskScore", 0)),
+                        "risk_score": int(result_json.get("riskScore", 50)),
                         "verdict": result_json.get("verdict", "UNKNOWN")
                     }).execute()
                 except Exception as db_err:
-                    print(f"Supabase Insert Error: {db_err}")
+                    print(f"Supabase Log Error: {db_err}")
 
             self._send_json(200, result_json)
             
         except Exception as e:
             traceback.print_exc()
-            self._send_error(500, f"Server error: {str(e)}")
+            self._send_error(500, f"AI analysis failed: {str(e)}")
 
     def _send_json(self, status_code, data):
         self.send_response(status_code)
