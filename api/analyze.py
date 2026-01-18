@@ -64,22 +64,16 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             # 1. CALL GEMINI (Updated to 2.0 Flash for stability)
-            # If your region doesn't support 2.0 yet, change back to 'gemini-1.5-flash'
-            model = genai.GenerativeModel('gemini-2.0-flash')
-            
+            # 1. Initialize the model simply - the SDK maps this to the stable v1 endpoint automatically
+            model = genai.GenerativeModel('gemini-1.5-flash')
+
             prompt = f"Analyze this message for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
-            
-            # Explicitly use the 'v1' API version to avoid 404 models error
-            response = model.generate_content(
-                prompt,
-                request_options=RequestOptions(api_version='v1')
-            )
-            
+
+            # 2. Call generate_content without RequestOptions
+            # This avoids the TypeError you just encountered
+            response = model.generate_content(prompt)
+
             result_text = response.text
-            if '{' in result_text and '}' in result_text:
-                result_text = result_text[result_text.find('{'):result_text.rfind('}') + 1]
-            
-            result_json = json.loads(result_text)
 
             # 2. LOG TO SUPABASE
             if supabase:
