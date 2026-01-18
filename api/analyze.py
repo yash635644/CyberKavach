@@ -2,26 +2,30 @@ import os
 import json
 from http.server import BaseHTTPRequestHandler
 import google.generativeai as genai
-from supabase import create_client, Client
 
 # Initialize Clients
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")  # Changed from SUPABASE_ANON_KEY
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-# Configure clients
+# Configure Gemini
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
 
+# Only import and create Supabase client if credentials exist
+supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-else:
-    supabase = None
+    try:
+        from supabase import create_client
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print(f"Supabase initialization failed: {e}")
+        supabase = None
 
 class handler(BaseHTTPRequestHandler):
     def _set_cors_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS, GET')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
     
     def do_OPTIONS(self):
@@ -58,19 +62,22 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
     "explanation": "<Brief reason in 2-3 sentences>"
 }}"""
             
-            # Call Gemini AI
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            # Call Gemini AI - CHANGED MODEL NAME
+            model = genai.GenerativeModel('gemini-1.5-flash')
             response = model.generate_content(prompt)
             
-            # Clean response
+            # Clean response - IMPROVED CLEANING
             result_text = response.text.strip()
             
             # Remove markdown if present
-            if result_text.startswith('```'):
-                lines = result_text.split('\n')
-                result_text = '\n'.join(lines[1:-1])
-                if result_text.startswith('json'):
-                    result_text = result_text[4:].strip()
+            if '```' in result_text:
+                parts = result_text.split('```')
+                if len(parts) >= 2:
+                    result_text = parts[1]
+                    if result_text.startswith('json'):
+                        result_text = result_text[4:].strip()
+            
+            result_text = result_text.replace('```', '').strip()
             
             # Parse JSON
             result_json = json.loads(result_text)
@@ -104,7 +111,9 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
         self._send_json(200, {
             "status": "Cyber Kavach API is running",
             "endpoint": "/api/analyze",
-            "method": "POST"
+            "method": "POST",
+            "gemini_configured": GEMINI_KEY is not None,
+            "supabase_configured": supabase is not None
         })
     
     def _send_json(self, status_code, data):
