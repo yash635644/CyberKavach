@@ -27,7 +27,8 @@ if SUPABASE_URL and SUPABASE_KEY:
 
 if GEMINI_KEY and GENAI_AVAILABLE:
     try:
-        genai.configure(api_key=GEMINI_KEY)
+        # Use v1 for stability to avoid the 404/v1beta error
+        genai.configure(api_key=GEMINI_KEY, transport='rest')
     except Exception as e:
         print(f"Gemini Config Error: {e}")
 
@@ -43,7 +44,6 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        """Fixes the 501 Error and provides a status check"""
         status_data = {
             "status": "Cyber Kavach API Online",
             "gemini_ready": GEMINI_KEY is not None,
@@ -54,7 +54,6 @@ class handler(BaseHTTPRequestHandler):
     
     def do_POST(self):
         try:
-            # Read request body
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
@@ -64,15 +63,14 @@ class handler(BaseHTTPRequestHandler):
                 self._send_error(400, "No text provided")
                 return
 
-            # 1. Call Gemini AI
-            # Use the explicit model path to avoid the 404 error
-            model = genai.GenerativeModel(model_name='gemini-1.5-flash')
-            prompt = f"Analyze this for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
+            # 1. Call Gemini AI (FIX: Explicit path models/gemini-1.5-flash)
+            model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
+            
+            prompt = f"Analyze this message for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
             
             response = model.generate_content(prompt)
             result_text = response.text
             
-            # Clean JSON Response if AI adds markdown
             if '{' in result_text and '}' in result_text:
                 result_text = result_text[result_text.find('{'):result_text.rfind('}') + 1]
             
@@ -83,7 +81,7 @@ class handler(BaseHTTPRequestHandler):
                 try:
                     supabase.table('scam_logs').insert({
                         "message_text": user_input,
-                        "risk_score": result_json.get("riskScore", 0),
+                        "risk_score": int(result_json.get("riskScore", 0)),
                         "verdict": result_json.get("verdict", "UNKNOWN")
                     }).execute()
                 except Exception as db_err:
