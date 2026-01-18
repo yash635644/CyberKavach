@@ -65,7 +65,8 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             # 1. Call Gemini AI
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # Use the explicit model path to avoid the 404 error
+            model = genai.GenerativeModel(model_name='gemini-1.5-flash')
             prompt = f"Analyze this for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
             
             response = model.generate_content(prompt)
