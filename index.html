@@ -252,51 +252,58 @@
 
     /* --- SECURE AI ANALYSIS CALL --- */
     async function analyze() {
-        const input = document.getElementById('scamInput').value;
-        const resultText = document.getElementById('resultText');
-        const needle = document.getElementById('needle');
-        const status = document.getElementById('status');
+    const input = document.getElementById('scamInput').value;
+    const resultText = document.getElementById('resultText');
+    const needle = document.getElementById('needle');
+    const status = document.getElementById('status');
 
-        if (!input) {
-            alert("Please paste content to analyze.");
-            return;
-        }
-
-        try {
-            // UI Feedback
-            resultText.innerHTML = "🔍 Cyber Kavach is scanning via Gemini AI...";
-            
-            // Call the Vercel Backend (The backend has the secret keys)
-            const response = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: input })
-            });
-
-            if (!response.ok) throw new Error("Backend connection failed.");
-            
-            const data = await response.json();
-
-            // Update UI with Real AI Results
-            const score = data.riskScore;
-            needle.style.transform = `rotate(${score * 1.8 - 90}deg)`;
-            
-            status.innerText = data.verdict;
-            const badgeColor = score > 70 ? "var(--danger)" : (score > 30 ? "#eab308" : "var(--success)");
-            status.style.color = badgeColor;
-            status.style.textShadow = `0 0 10px ${badgeColor}`;
-
-            resultText.innerHTML = `
-                <div style="font-size: 1.2rem; margin-bottom: 10px;">${data.explanation}</div>
-                <div style="color: #94a3b8;">Threat Confidence Score: <b>${score}/100</b></div>
-                ${score >= 70 ? '<br><a href="https://cybercrime.gov.in" target="_blank" style="color:white; text-decoration: underline;">Report this scam to Govt</a>' : ''}
-            `;
-
-        } catch (error) {
-            console.error("System Error:", error);
-            resultText.innerHTML = "<span style='color:red;'>⚠️ Analysis Offline. Ensure Vercel Environment Variables are set.</span>";
-        }
+    if (!input) {
+        alert("Please paste content to analyze.");
+        return;
     }
+
+    try {
+        resultText.innerHTML = "🔍 Cyber Kavach is scanning via Gemini AI...";
+        
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: input })
+        });
+
+        if (!response.ok) throw new Error("Backend connection failed.");
+        
+        const data = await response.json();
+        console.log("AI Response Data:", data); // Check your browser console (F12)
+
+        // --- FIX: Normalize the Score (Handles 'riskScore' or 'risk_score') ---
+        const score = data.riskScore || data.risk_score || 0;
+        const verdict = data.verdict || "UNKNOWN";
+        const explanation = data.explanation || "No explanation provided.";
+
+        // --- FIX: Move the Needle ---
+        // Formula: score * 1.8 (to cover 180 degrees) - 90 (to start from left)
+        const rotation = (score * 1.8) - 90;
+        needle.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        
+        // Update Status and Colors
+        status.innerText = verdict;
+        const badgeColor = score > 70 ? "var(--danger)" : (score > 30 ? "#eab308" : "var(--success)");
+        status.style.color = badgeColor;
+        status.style.textShadow = `0 0 10px ${badgeColor}`;
+
+        // Update Text
+        resultText.innerHTML = `
+            <div style="font-size: 1.2rem; margin-bottom: 10px;">${explanation}</div>
+            <div style="color: #94a3b8;">Threat Confidence Score: <b>${score}/100</b></div>
+        `;
+
+    } catch (error) {
+        console.error("System Error:", error);
+        resultText.innerHTML = `<span style='color:red;'>⚠️ Analysis Error: ${error.message}</span>`;
+    }
+}
 </script>
 </body>
+
 </html>
