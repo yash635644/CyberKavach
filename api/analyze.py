@@ -3,23 +3,10 @@ import json
 from http.server import BaseHTTPRequestHandler
 import google.generativeai as genai
 
-# Get environment variables
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-# Configure Gemini
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
-
-# Supabase - completely optional, wrapped in try-except
-supabase = None
-if SUPABASE_URL and SUPABASE_KEY:
-    try:
-        from supabase import create_client
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-    except:
-        supabase = None  # Silently skip if connection fails
 
 class handler(BaseHTTPRequestHandler):
     def _set_cors_headers(self):
@@ -74,30 +61,13 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
             result_text = result_text.replace('```', '').strip()
             result_json = json.loads(result_text)
             
-            required_fields = ['riskScore', 'verdict', 'explanation']
-            if not all(field in result_json for field in required_fields):
-                raise ValueError("Missing required fields")
-            
-            if supabase:
-                try:
-                    supabase.table('scam_logs').insert({
-                        "message_text": user_input,
-                        "risk_score": result_json["riskScore"],
-                        "verdict": result_json["verdict"]
-                    }).execute()
-                except:
-                    pass
-            
             self._send_json(200, result_json)
             
         except Exception as e:
             self._send_error(500, f"Analysis failed: {str(e)}")
     
     def do_GET(self):
-        self._send_json(200, {
-            "status": "Cyber Kavach API is running",
-            "gemini_configured": GEMINI_KEY is not None
-        })
+        self._send_json(200, {"status": "API running", "gemini_configured": GEMINI_KEY is not None})
     
     def _send_json(self, status_code, data):
         self.send_response(status_code)
