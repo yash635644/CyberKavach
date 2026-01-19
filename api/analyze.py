@@ -63,21 +63,23 @@ class handler(BaseHTTPRequestHandler):
                 self._send_error(400, "No text provided")
                 return
 
-            # 1. CALL GEMINI
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            # 1. CALL GEMINI (Updated to 2.5 Flash for stability in 2026)
+            # This name is a stable alias that prevents 404 errors
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
             prompt = f"Analyze this message for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
             
+            # The SDK will now correctly map to the v1 stable endpoint
             response = model.generate_content(prompt)
             result_text = response.text
 
-            # --- NEW: CLEAN THE JSON RESPONSE ---
+            # --- CLEAN THE JSON RESPONSE ---
             if '{' in result_text and '}' in result_text:
                 result_text = result_text[result_text.find('{'):result_text.rfind('}') + 1]
             
-            # Now we parse it into result_json
             result_json = json.loads(result_text)
 
-            # 2. LOG TO SUPABASE (Now result_json actually exists)
+            # 2. LOG TO SUPABASE
             if supabase:
                 try:
                     supabase.table('scam_logs').insert({
@@ -88,12 +90,11 @@ class handler(BaseHTTPRequestHandler):
                 except Exception as db_err:
                     print(f"Supabase Log Error: {db_err}")
 
-            # 3. SEND RESPONSE back to Frontend
             self._send_json(200, result_json)
             
         except Exception as e:
             traceback.print_exc()
-            self._send_error(500, f"Analysis Error: {str(e)}")
+            self._send_error(500, f"AI analysis failed: {str(e)}")
 
     def _send_json(self, status_code, data):
         self.send_response(status_code)
