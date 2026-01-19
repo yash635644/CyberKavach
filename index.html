@@ -203,12 +203,21 @@
     </div>
 
     <h2 class="section-title" id="feedback" style="text-align: center; margin-bottom: 30px;">Feedback</h2>
-    <div class="feedback-form">
-        <input type="text" placeholder="Full Name" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;">
-        <input type="email" placeholder="Email Address" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;">
-        <textarea placeholder="Share your suggestions or report issues with the tool..." style="width: 100%; min-height: 100px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;"></textarea>
-        <button class="btn" onclick="alert('Thank you for your valuable feedback!')">SUBMIT FEEDBACK</button>
-    </div>
+<div class="feedback-form">
+    <form action="https://formspree.io/f/mbddobkb" method="POST" id="feedbackForm">
+        <input type="text" name="name" placeholder="Full Name" required 
+               style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;">
+        
+        <input type="email" name="email" placeholder="Email Address" required 
+               style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;">
+        
+        <textarea name="message" placeholder="Share your suggestions or report issues with the tool..." required 
+                  style="width: 100%; min-height: 100px; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px;"></textarea>
+        
+        <button type="submit" class="btn">SUBMIT FEEDBACK</button>
+    </form>
+    <div id="formStatus" style="text-align: center; margin-top: 15px; display: none;"></div>
+</div>
 </div>
 
 <footer>
@@ -303,7 +312,39 @@
         resultText.innerHTML = `<span style='color:red;'>⚠️ Analysis Error: ${error.message}</span>`;
     }
 }
+    const form = document.getElementById("feedbackForm");
+const status = document.getElementById("formStatus");
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault(); // Prevent page refresh
+    const data = new FormData(event.target);
+    
+    status.style.display = "block";
+    status.innerHTML = "⏳ Sending feedback...";
+    status.style.color = "var(--primary)";
+
+    fetch(event.target.action, {
+        method: form.method,
+        body: data,
+        headers: {
+            'Accept': 'application/json'
+        }
+    }).then(response => {
+        if (response.ok) {
+            status.innerHTML = "✅ Thank you! Your feedback has been sent.";
+            status.style.color = "var(--success)";
+            form.reset(); // Clear the form
+        } else {
+            status.innerHTML = "❌ Oops! There was a problem sending your form.";
+            status.style.color = "var(--danger)";
+        }
+    }).catch(error => {
+        status.innerHTML = "❌ Error connecting to server.";
+        status.style.color = "var(--danger)";
+    });
+});
 </script>
 </body>
 
 </html>
+
