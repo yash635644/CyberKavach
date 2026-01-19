@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Kavach | AI Scam Defense & Redressal</title>
+
+    <meta name="description" content="Cyber Kavach - AI-powered real-time scam detection for Phishing, Banking Fraud, and Malicious Links. Protect yourself from digital threats instantly.">
+    <meta name="keywords" content="Cyber Kavach, AI Scam Detection, Phishing Shield, India Cyber Security, Fraud Redressal, Yash Trivedi, Major Project 2026">
+    <meta name="author" content="Yash Trivedi">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cyber-kavach.vercel.app/">
+    <meta property="og:title" content="Cyber Kavach | AI Scam Defense & Redressal">
+    <meta property="og:description" content="Real-time detection for Phishing and Banking Fraud using Gemini AI.">
+    <meta property="og:image" content="https://cyber-kavach.vercel.app/og-image.jpg">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://cyber-kavach.vercel.app/">
+    <meta property="twitter:title" content="Cyber Kavach | AI Scam Defense">
+    <meta property="twitter:description" content="Stop digital fraud before it happens with Cyber Kavach AI.">
+    <meta property="twitter:image" content="https://cyber-kavach.vercel.app/og-image.jpg">
+
+    <meta name="theme-color" content="#020617">
+
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -125,6 +145,59 @@
             .menu-toggle { display: block; }
             .hero h1 { font-size: 2.2rem; }
         }
+
+        /* ===== MOBILE RESPONSIVE FIXES ===== */
+@media(max-width: 900px) {
+    .verdict-container { 
+        grid-template-columns: 1fr !important; /* Forces vertical stacking */
+        gap: 20px;
+    }
+
+    .risk-box { 
+        min-height: 300px; 
+        padding: 20px;
+    }
+
+    /* Adjust Gauge size for smaller screens */
+    .gauge { 
+        width: 160px; 
+        height: 80px; 
+    }
+    
+    .gauge-center { 
+        width: 120px; 
+        height: 60px; 
+    }
+    
+    .needle { 
+        height: 60px; 
+    }
+
+    /* Hide nav links on mobile initially */
+    .nav-links { 
+        display: none; 
+        position: absolute; 
+        top: 70px; 
+        right: 5%; 
+        background: var(--glass); 
+        width: 200px;
+        flex-direction: column;
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid var(--border);
+    }
+
+    .nav-links.show { 
+        display: flex; 
+    }
+
+    .menu-toggle { 
+        display: block !important; 
+    }
+
+    .hero h1 { font-size: 1.8rem; }
+    }
+        
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -347,5 +420,6 @@ form.addEventListener("submit", async function(event) {
 </body>
 
 </html>
+
 
 
