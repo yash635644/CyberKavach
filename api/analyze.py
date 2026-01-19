@@ -63,19 +63,21 @@ class handler(BaseHTTPRequestHandler):
                 self._send_error(400, "No text provided")
                 return
 
-            # 1. CALL GEMINI (Updated to 2.0 Flash for stability)
-            # 1. Initialize the model simply - the SDK maps this to the stable v1 endpoint automatically
+            # 1. CALL GEMINI
             model = genai.GenerativeModel('gemini-1.5-flash')
-
             prompt = f"Analyze this message for scams. Return ONLY JSON: {{\"riskScore\": 0-100, \"verdict\": \"SAFE/SUSPICIOUS/DANGEROUS\", \"explanation\": \"reason\"}}\n\nMessage: {user_input}"
-
-            # 2. Call generate_content without RequestOptions
-            # This avoids the TypeError you just encountered
+            
             response = model.generate_content(prompt)
-
             result_text = response.text
 
-            # 2. LOG TO SUPABASE
+            # --- NEW: CLEAN THE JSON RESPONSE ---
+            if '{' in result_text and '}' in result_text:
+                result_text = result_text[result_text.find('{'):result_text.rfind('}') + 1]
+            
+            # Now we parse it into result_json
+            result_json = json.loads(result_text)
+
+            # 2. LOG TO SUPABASE (Now result_json actually exists)
             if supabase:
                 try:
                     supabase.table('scam_logs').insert({
@@ -86,11 +88,12 @@ class handler(BaseHTTPRequestHandler):
                 except Exception as db_err:
                     print(f"Supabase Log Error: {db_err}")
 
+            # 3. SEND RESPONSE back to Frontend
             self._send_json(200, result_json)
             
         except Exception as e:
             traceback.print_exc()
-            self._send_error(500, f"AI analysis failed: {str(e)}")
+            self._send_error(500, f"Analysis Error: {str(e)}")
 
     def _send_json(self, status_code, data):
         self.send_response(status_code)
