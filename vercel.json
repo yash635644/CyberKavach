@@ -4,6 +4,10 @@
     { "src": "api/analyze.py", "use": "@vercel/python" },
     { "src": "index.html", "use": "@vercel/static" }
   ],
+  "rewrites": [
+    { "source": "/api/analyze", "destination": "api/analyze.py" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -18,9 +22,5 @@
         }
       ]
     }
-  ],
-  "routes": [
-    { "src": "/api/analyze", "dest": "api/analyze.py" },
-    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
