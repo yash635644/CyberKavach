@@ -119,69 +119,12 @@
 
         /* ===== STATS & VERDICT ===== */
         .verdict-container { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; margin-bottom: 50px; }
-        /* Enhanced Gauge Design */
-.gauge { 
-    width: 220px; 
-    height: 110px; 
-    margin: 0 auto 20px; 
-    position: relative; 
-    overflow: hidden;
-    border-bottom: 2px solid var(--border);
-}
+        .risk-box { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 30px; text-align: center; }
+        .gauge { width: 200px; height: 100px; margin: 0 auto 20px; background: #1e293b; border-radius: 100px 100px 0 0; position: relative; overflow: hidden; }
+        .gauge-color { width: 100%; height: 100%; background: conic-gradient(from 270deg, var(--success) 0deg 60deg, #eab308 60deg 120deg, var(--danger) 120deg 180deg); }
+        .gauge-center { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 150px; height: 75px; background: var(--bg); border-radius: 75px 75px 0 0; }
+        .needle { position: absolute; bottom: 0; left: 50%; width: 3px; height: 75px; background: #fff; transform-origin: bottom center; transform: rotate(-90deg); transition: 1.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
 
-/* The Semi-Circle Background */
-.gauge-bg {
-    position: absolute;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    background: conic-gradient(
-        from 270deg, 
-        #22c55e 0deg 60deg,    /* Green */
-        #eab308 60deg 120deg,  /* Yellow */
-        #ef4444 120deg 180deg, /* Red */
-        transparent 180deg
-    );
-    filter: brightness(0.7);
-    transition: filter 0.5s ease;
-}
-
-/* Inner cutout to make it a ring */
-.gauge-center { 
-    position: absolute; 
-    bottom: 0; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: 160px; 
-    height: 80px; 
-    background: var(--bg); /* Matches site background */
-    border-radius: 80px 80px 0 0; 
-    z-index: 2;
-    border: 1px solid var(--border);
-    border-bottom: none;
-}
-
-/* Improved Needle */
-.needle { 
-    position: absolute; 
-    bottom: 0; 
-    left: 50%; 
-    width: 4px; 
-    height: 90px; 
-    background: #fff; 
-    transform-origin: bottom center; 
-    transform: translateX(-50%) rotate(-90deg); 
-    transition: all 1.5s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
-    z-index: 10;
-    box-shadow: 0 0 10px rgba(255,255,255,0.5);
-    border-radius: 4px;
-}
-
-/* Glow effect when high risk */
-.risk-box.high-threat {
-    box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.2), 0 0 20px rgba(239, 68, 68, 0.1);
-    border-color: var(--danger);
-}
         /* ===== FOOTER & FEEDBACK ===== */
         .feedback-form { max-width: 700px; margin: 0 auto 60px; background: var(--glass); padding: 40px; border-radius: 20px; border: 1px solid var(--border); }
         footer { text-align: center; padding: 40px; border-top: 1px solid var(--border); background: var(--glass); color: #94a3b8; }
@@ -297,16 +240,10 @@
             <h2 id="status" style="color:var(--success)">System Ready</h2>
             <p id="resultText" style="margin-top: 10px; color: #94a3b8;"></p>
         </div>
-       <div class="risk-box" id="verdictCard">
-    <h3>AI Verdict</h3>
-    <div class="gauge">
-        <div class="gauge-bg" id="gaugeBg"></div>
-        <div class="gauge-center"></div>
-        <div class="needle" id="needle"></div>
-    </div>
-    <h2 id="status" style="color:var(--success)">System Ready</h2>
-    <p id="resultText" style="margin-top: 10px; color: #94a3b8;"></p>
-</div>
+        <div class="risk-box" style="text-align: left; height: 350px;">
+            <h3>Live Threat Activity</h3>
+            <canvas id="chart"></canvas>
+        </div>
     </div>
 
     <h2 class="section-title" id="helplines" style="text-align: center; margin-bottom: 30px;">🚨 Emergency Helplines</h2>
@@ -428,39 +365,20 @@
 
         // --- FIX: Move the Needle ---
         // Formula: score * 1.8 (to cover 180 degrees) - 90 (to start from left)
-        // ... inside your analyze() function ...
+        const rotation = (score * 1.8) - 90;
+        needle.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        
+        // Update Status and Colors
+        status.innerText = verdict;
+        const badgeColor = score > 70 ? "var(--danger)" : (score > 30 ? "#eab308" : "var(--success)");
+        status.style.color = badgeColor;
+        status.style.textShadow = `0 0 10px ${badgeColor}`;
 
-// 1. Calculate Rotation
-const rotation = (score * 1.8) - 90;
-needle.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-
-// 2. Determine Color and Glow
-let finalColor = "var(--success)";
-let glowIntensity = "0.7";
-
-if (score > 70) {
-    finalColor = "var(--danger)";
-    glowIntensity = "1.2"; // Brighten the red
-    document.getElementById('verdictCard').classList.add('high-threat');
-} else if (score > 30) {
-    finalColor = "#eab308"; // Yellow
-    glowIntensity = "1.0";
-    document.getElementById('verdictCard').classList.remove('high-threat');
-} else {
-    document.getElementById('verdictCard').classList.remove('high-threat');
-}
-
-// 3. Apply styles with animation
-status.innerText = verdict;
-status.style.color = finalColor;
-status.style.textShadow = `0 0 15px ${finalColor}`;
-document.getElementById('gaugeBg').style.filter = `brightness(${glowIntensity})`;
-
-// Update Text
-resultText.innerHTML = `
-    <div style="font-size: 1.1rem; margin-bottom: 10px; color: #fff;">${explanation}</div>
-    <div style="color: #94a3b8; font-weight: bold;">Security Score: ${score}/100</div>
-`;
+        // Update Text
+        resultText.innerHTML = `
+            <div style="font-size: 1.2rem; margin-bottom: 10px;">${explanation}</div>
+            <div style="color: #94a3b8;">Threat Confidence Score: <b>${score}/100</b></div>
+        `;
 
     } catch (error) {
         console.error("System Error:", error);
@@ -502,8 +420,6 @@ form.addEventListener("submit", async function(event) {
 </body>
 
 </html>
-
-
 
 
 
